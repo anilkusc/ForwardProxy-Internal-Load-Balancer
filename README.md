@@ -6,7 +6,6 @@ This is forward proxy with internal load balancer.It is working on Layer 7(for n
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;->interface4------>x.com
 <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;->interface5------>y.com
 # TODOs
-- Https support
 - Failover(If cannot reach from an interface than try another one)
 - Load Balancing Algorithms
 - Enabling Reverse Proxy on demand(on another port)
@@ -14,4 +13,5 @@ This is forward proxy with internal load balancer.It is working on Layer 7(for n
 - Dashboard(Monitoring Requests)
 - Auth(From headers)
 - More Header options from args
+- Https support
 - Tls Termination
