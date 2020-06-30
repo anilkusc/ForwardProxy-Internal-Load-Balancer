@@ -79,8 +79,14 @@ func Healthcheck_Address() {
 					Dial: d.Dial,
 				}
 				client := &http.Client{Transport: tr}
-				req, _ := http.NewRequest("GET", *checkAddr, nil)
-				resp, _ := client.Do(req)
+				req, err := http.NewRequest("GET", *checkAddr, nil)
+				if err != nil {
+					continue
+				}
+				resp, err := client.Do(req)
+				if err != nil {
+					continue
+				}
 
 				if resp.StatusCode < 400 {
 					log.Println("This address is now healty and enabling again: ", Bannedaddress)
