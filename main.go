@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	addresses       = InitializeAddresses()
+	addresses       = []string{}
 	Bannedaddresses = []string{}
 	counter         = 0
 	port            = flag.String("port", "8080", "Specify port number")
@@ -19,31 +19,46 @@ var (
 )
 
 func proxy(w http.ResponseWriter, req *http.Request) {
+	for _, address := range addresses {
+		tr, ip := ClientCreator()
+		client := &http.Client{Transport: tr}
 
-	tr := ClientCreator()
-	client := &http.Client{Transport: tr}
+		req, err := http.NewRequest(req.Method, "http://"+req.Host, nil)
+		if err != nil {
+			AddBlacklist(ip, "http://"+req.Host)
+			fmt.Println("This ip address is now in blacklist:", address)
+			log.Println(err)
+			counter = 0
+			continue
+		}
 
-	req, err := http.NewRequest(req.Method, "http://"+req.Host, nil)
-	if err != nil {
-		log.Fatalln(err)
+		resp, err := client.Do(req)
+
+		if err != nil {
+			log.Println("Error reading response. ", err)
+			AddBlacklist(ip, "http://"+req.Host)
+			fmt.Println("This ip address is now in blacklist:", address)
+			counter = 0
+			continue
+		}
+
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println("Error reading response. ", err)
+			AddBlacklist(ip, "http://"+req.Host)
+			fmt.Println("This ip address is now in blacklist:", address)
+			counter = 0
+			continue
+		}
+		defer resp.Body.Close()
+		w.Write(body)
+		break
 	}
 
-	resp, err := client.Do(req)
-
-	if err != nil {
-		log.Fatal("Error reading response. ", err)
-
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatal("Error reading response. ", err)
-	}
-	defer resp.Body.Close()
-	w.Write(body)
 }
 
 func main() {
+	addresses = InitializeAddresses()
 	flag.Parse()
 	if *checkAddr != "" {
 		go Healthcheck_Address()

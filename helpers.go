@@ -9,9 +9,15 @@ import (
 	"time"
 )
 
-func ClientCreator() *http.Transport {
+func ClientCreator(params ...string) (*http.Transport, string) {
+	var nci string
+	if len(params) <= 0 {
+		nci = IpSelector()
+	} else {
+		nci = params[0]
+	}
 
-	localAddr, err := net.ResolveIPAddr("ip", IpSelector())
+	localAddr, err := net.ResolveIPAddr("ip", nci)
 	if err != nil {
 		panic(err)
 	}
@@ -30,7 +36,7 @@ func ClientCreator() *http.Transport {
 		Dial:                d.Dial,
 		TLSHandshakeTimeout: 10 * time.Second,
 	}
-	return tr
+	return tr, nci
 }
 
 func InitializeAddresses() []string {
@@ -51,15 +57,28 @@ func InitializeAddresses() []string {
 			}
 		}
 	}
+	for i, address := range addresses {
+		for j, _ := range addresses {
+			if i == j {
+				continue
+			}
+			if address == addresses[j] {
+				RemoveIndex(addresses, j)
+			}
+		}
+	}
+
 	return addresses
 }
 
 func IpSelector() string {
-	counter++
+
 	if counter >= len(addresses) {
 		counter = counter - len(addresses)
 	}
-	return addresses[counter]
+	temp := counter
+	counter++
+	return addresses[temp]
 }
 
 func Healthcheck_Address() {
@@ -67,17 +86,7 @@ func Healthcheck_Address() {
 		if len(Bannedaddresses) > 0 {
 			for i, Bannedaddress := range Bannedaddresses {
 
-				localAddr, _ := net.ResolveIPAddr("ip", Bannedaddress)
-				localTCPAddr := net.TCPAddr{
-					IP: localAddr.IP,
-				}
-
-				d := net.Dialer{
-					LocalAddr: &localTCPAddr,
-				}
-				tr := &http.Transport{
-					Dial: d.Dial,
-				}
+				tr, _ := ClientCreator(Bannedaddress)
 				client := &http.Client{Transport: tr}
 				req, err := http.NewRequest("GET", *checkAddr, nil)
 				if err != nil {
@@ -96,17 +105,8 @@ func Healthcheck_Address() {
 			}
 		}
 		for i, address := range addresses {
-			localAddr, _ := net.ResolveIPAddr("ip", address)
-			localTCPAddr := net.TCPAddr{
-				IP: localAddr.IP,
-			}
 
-			d := net.Dialer{
-				LocalAddr: &localTCPAddr,
-			}
-			tr := &http.Transport{
-				Dial: d.Dial,
-			}
+			tr, _ := ClientCreator(address)
 			client := &http.Client{Transport: tr}
 			req, _ := http.NewRequest("GET", *checkAddr, nil)
 			resp, err := client.Do(req)
@@ -129,4 +129,56 @@ func Healthcheck_Address() {
 //Remove index from a slice
 func RemoveIndex(s []string, index int) []string {
 	return append(s[:index], s[index+1:]...)
+}
+
+func AddBlacklist(ip string, host string) {
+	inList := false
+	for _, Bannedaddress := range Bannedaddresses {
+
+		if Bannedaddress == ip {
+			inList = true
+			break
+		}
+
+	}
+	if inList == false {
+		Bannedaddresses = append(Bannedaddresses, ip)
+	}
+	for i, address := range addresses {
+		if address == ip {
+			RemoveIndex(addresses, i)
+			break
+		}
+
+	}
+	go Blacklist_Controller(ip, host)
+}
+
+func Blacklist_Controller(ip string, host string) {
+	for {
+		time.Sleep(300 * time.Second)
+		tr, _ := ClientCreator(ip)
+		client := &http.Client{Transport: tr}
+		req, err := http.NewRequest("GET", host, nil)
+		if err != nil {
+			continue
+		}
+		resp, err := client.Do(req)
+		if err != nil {
+			continue
+		}
+
+		if resp.StatusCode < 400 {
+			log.Println("This address is now healty and enabling again: ", ip)
+			addresses = append(addresses, ip)
+			for i, Bannedaddress := range Bannedaddresses {
+				if Bannedaddress == ip {
+					RemoveIndex(Bannedaddresses, i)
+					break
+				}
+			}
+
+		}
+
+	}
 }
