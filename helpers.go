@@ -57,16 +57,7 @@ func InitializeAddresses() []string {
 			}
 		}
 	}
-	for i, address := range addresses {
-		for j, _ := range addresses {
-			if i == j {
-				continue
-			}
-			if address == addresses[j] {
-				RemoveIndex(addresses, j)
-			}
-		}
-	}
+	addresses = RemoveDuplicateValues(addresses)
 
 	return addresses
 }
@@ -100,7 +91,7 @@ func Healthcheck_Address() {
 				if resp.StatusCode < 400 {
 					log.Println("This address is now healty and enabling again: ", Bannedaddress)
 					addresses = append(addresses, Bannedaddress)
-					RemoveIndex(Bannedaddresses, i)
+					Bannedaddresses = RemoveIndex(Bannedaddresses, i)
 				}
 			}
 		}
@@ -114,7 +105,7 @@ func Healthcheck_Address() {
 			if err != nil || resp.StatusCode >= 400 {
 				log.Println("Cannot reach to target via this interface:", address)
 				Bannedaddresses = append(Bannedaddresses, address)
-				RemoveIndex(addresses, i)
+				addresses = RemoveIndex(addresses, i)
 			}
 		}
 		if len(addresses) < 1 {
@@ -129,6 +120,19 @@ func Healthcheck_Address() {
 //Remove index from a slice
 func RemoveIndex(s []string, index int) []string {
 	return append(s[:index], s[index+1:]...)
+}
+
+func RemoveDuplicateValues(s []string) []string {
+	keys := make(map[string]bool)
+	list := []string{}
+
+	for _, entry := range s {
+		if _, value := keys[entry]; !value {
+			keys[entry] = true
+			list = append(list, entry)
+		}
+	}
+	return list
 }
 
 func AddBlacklist(ip string, host string) {
@@ -146,7 +150,7 @@ func AddBlacklist(ip string, host string) {
 	}
 	for i, address := range addresses {
 		if address == ip {
-			RemoveIndex(addresses, i)
+			addresses = RemoveIndex(addresses, i)
 			break
 		}
 
@@ -173,7 +177,7 @@ func Blacklist_Controller(ip string, host string) {
 			addresses = append(addresses, ip)
 			for i, Bannedaddress := range Bannedaddresses {
 				if Bannedaddress == ip {
-					RemoveIndex(Bannedaddresses, i)
+					Bannedaddresses = RemoveIndex(Bannedaddresses, i)
 					break
 				}
 			}

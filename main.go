@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	addresses       = []string{}
+	addresses       = InitializeAddresses()
 	Bannedaddresses = []string{}
 	counter         = 0
 	port            = flag.String("port", "8080", "Specify port number")
@@ -19,14 +19,14 @@ var (
 )
 
 func proxy(w http.ResponseWriter, req *http.Request) {
-	for _, address := range addresses {
+	for _, _ = range addresses {
 		tr, ip := ClientCreator()
 		client := &http.Client{Transport: tr}
 
 		req, err := http.NewRequest(req.Method, "http://"+req.Host, nil)
 		if err != nil {
+			fmt.Println("This ip address is now in blacklist:", ip)
 			AddBlacklist(ip, "http://"+req.Host)
-			fmt.Println("This ip address is now in blacklist:", address)
 			log.Println(err)
 			counter = 0
 			continue
@@ -35,9 +35,9 @@ func proxy(w http.ResponseWriter, req *http.Request) {
 		resp, err := client.Do(req)
 
 		if err != nil {
-			log.Println("Error reading response. ", err)
+			log.Println("Error doing request. ", err)
+			fmt.Println("This ip address is now in blacklist:", ip)
 			AddBlacklist(ip, "http://"+req.Host)
-			fmt.Println("This ip address is now in blacklist:", address)
 			counter = 0
 			continue
 		}
@@ -45,8 +45,8 @@ func proxy(w http.ResponseWriter, req *http.Request) {
 		body, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Println("Error reading response. ", err)
+			fmt.Println("This ip address is now in blacklist:", ip)
 			AddBlacklist(ip, "http://"+req.Host)
-			fmt.Println("This ip address is now in blacklist:", address)
 			counter = 0
 			continue
 		}
@@ -58,12 +58,10 @@ func proxy(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	addresses = InitializeAddresses()
 	flag.Parse()
 	if *checkAddr != "" {
 		go Healthcheck_Address()
 	}
-	//fmt.Println(addresses)
 
 	http.HandleFunc("/", proxy)
 	fmt.Println("Serving on port :", *port)
