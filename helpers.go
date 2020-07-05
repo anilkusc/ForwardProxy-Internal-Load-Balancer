@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net"
 	"net/http"
 	"strings"
@@ -63,12 +64,32 @@ func InitializeAddresses() []string {
 }
 
 func IpSelector() string {
-
+	var temp int
+	rand.Seed(time.Now().UnixNano())
 	if counter >= len(addresses) {
 		counter = counter - len(addresses)
 	}
-	temp := counter
-	counter++
+
+	switch *LBAlghorithm {
+	case "roundrobin":
+		temp = counter
+		counter++
+		break
+	case "random":
+		temp = rand.Intn(len(addresses))
+		break
+	case "sourceip":
+		//
+		break
+	case "leastconn":
+		//
+		break
+	default:
+		temp = counter
+		counter++
+		break
+	}
+
 	return addresses[temp]
 }
 

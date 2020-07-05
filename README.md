@@ -6,12 +6,12 @@ This is forward proxy with internal load balancer.It is working on Layer 7(for n
 &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;->interface4------>x.com
 <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;->interface5------>y.com
 # TODOs
-- Load Balancing Algorithms
 - Enabling Reverse Proxy on demand(on another port)
 - Add Layer 3 support
 - Dashboard(Monitoring Requests)
 - Auth(From headers)
 - More Header options from args
 - IP Pools
+- Source IP,Least connections alghorithms will be implement
 - Https support
 - Tls Termination
