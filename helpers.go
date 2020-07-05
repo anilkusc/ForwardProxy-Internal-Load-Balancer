@@ -186,3 +186,20 @@ func Blacklist_Controller(ip string, host string) {
 
 	}
 }
+
+func ExcludeAddresses(excluded string) []string {
+	excludedAddresses := strings.Split(excluded, ",")
+	newAddresses := addresses
+
+	for _, excludedAddress := range excludedAddresses {
+		for i, address := range addresses {
+
+			if excludedAddress == address {
+				newAddresses = RemoveIndex(newAddresses, i)
+				break
+			}
+
+		}
+	}
+	return newAddresses
+}
