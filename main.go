@@ -10,9 +10,11 @@ import (
 
 var (
 	addresses          = InitializeAddresses()
+	clientIP           = ""
 	Bannedaddresses    = []string{}
 	counter            = 0
 	LeastConnValues    = make(map[string]int)
+	SourceIpCache      = make(map[string]string)
 	port               = flag.String("port", "8080", "Specify port number")
 	checkAddr          = flag.String("check-addr", "", "Healthcheck for specific address if address is not reachable from interface don't use that network card for that specific address.")
 	LBAlghorithm       = flag.String("balancing-alghorithm", "roundrobin", "Specify Round-Robin Alghorithm.(roundrobin,random,sourceip,leastconn)")
@@ -22,6 +24,9 @@ var (
 )
 
 func proxy(w http.ResponseWriter, req *http.Request) {
+	if *LBAlghorithm == "sourceip" {
+		clientIP = ReadUserIP(req)
+	}
 	for _, _ = range addresses {
 		tr, ip := ClientCreator()
 		client := &http.Client{Transport: tr}

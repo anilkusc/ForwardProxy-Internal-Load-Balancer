@@ -79,7 +79,7 @@ func IpSelector() string {
 		temp = rand.Intn(len(addresses))
 		break
 	case "sourceip":
-		//
+		temp = SourceIpHelper()
 		break
 	case "leastconn":
 		temp = LeastConnHelper()
@@ -278,4 +278,51 @@ func LeastConnHelper() int {
 	}
 	LeastConnValues[addressStore]++
 	return index
+}
+func ReadUserIP(r *http.Request) string {
+	IPAddress := r.Header.Get("X-Real-Ip")
+	if IPAddress == "" {
+		IPAddress = r.Header.Get("X-Forwarded-For")
+	}
+	if IPAddress == "" {
+		IPAddress = r.RemoteAddr
+	}
+	address := strings.Split(IPAddress, ":")
+	if address[0] == "[" && address[2] == "1]" {
+		address[0] = "127.0.0.1"
+	}
+	return address[0]
+}
+
+func SourceIpHelper() int {
+	var isBanned bool = true
+
+	if SourceIpCache[clientIP] == "" || SourceIpCache[clientIP] == "127.0.0.1" {
+		temp := counter
+		SourceIpCache[clientIP] = addresses[temp]
+		counter++
+		return temp
+	} else {
+		for _, address := range addresses {
+			if address == SourceIpCache[clientIP] {
+				isBanned = false
+				break
+			}
+		}
+	}
+
+	if isBanned == true {
+		temp := counter
+		SourceIpCache[clientIP] = addresses[temp]
+		counter++
+		return temp
+	} else {
+		for i, address := range addresses {
+			if address == SourceIpCache[clientIP] {
+				return i
+			}
+		}
+
+	}
+	return 0
 }

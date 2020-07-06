@@ -12,7 +12,6 @@ This is forward proxy with internal load balancer.It is working on Layer 7(for n
 - Auth(From headers)
 - More Header options from args
 - IP Pools
-- Source IP alghorithm will be implement
 - Https support
 - Tls Termination<br><br>
 ## Warning: It is not battle tested yet.Please test it thoroughly before using in production.
