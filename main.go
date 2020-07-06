@@ -12,9 +12,10 @@ var (
 	addresses          = InitializeAddresses()
 	Bannedaddresses    = []string{}
 	counter            = 0
+	LeastConnValues    = make(map[string]int)
 	port               = flag.String("port", "8080", "Specify port number")
 	checkAddr          = flag.String("check-addr", "", "Healthcheck for specific address if address is not reachable from interface don't use that network card for that specific address.")
-	LBAlghorithm       = flag.String("balancing-alghorithm", "random", "Specify Round-Robin Alghorithm.(roundrobin,random,sourceip,leastconn)")
+	LBAlghorithm       = flag.String("balancing-alghorithm", "roundrobin", "Specify Round-Robin Alghorithm.(roundrobin,random,sourceip,leastconn)")
 	checkInterface     = flag.Bool("check-interface", false, "If some of the interfaces are down they are disabled for proxy until they get healty")
 	timeInterval       = flag.Int("time-interval", 300, "Healthcheck time interval in seconds.")
 	excludedeaddresses = flag.String("excluded-addresses", "", "Specify ip addresses that exclude for load balancing.E.g. :`192.168.1.20,192.168.1.21` ")

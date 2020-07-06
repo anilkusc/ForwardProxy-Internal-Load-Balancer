@@ -82,7 +82,7 @@ func IpSelector() string {
 		//
 		break
 	case "leastconn":
-		//
+		temp = LeastConnHelper()
 		break
 	default:
 		temp = counter
@@ -223,4 +223,59 @@ func ExcludeAddresses(excluded string) []string {
 		}
 	}
 	return newAddresses
+}
+func LeastConnHelper() int {
+	min := -1
+	inAddresses, inValues := false, false
+	var addressStore string
+	for _, address := range addresses {
+		inAddresses = false
+		for key, _ := range LeastConnValues {
+			if key == address {
+				inAddresses = true
+				break
+			}
+
+		}
+		if inAddresses == false {
+			LeastConnValues[address] = 0
+		}
+	}
+
+	for key, _ := range LeastConnValues {
+		inValues = false
+		for _, address := range addresses {
+			if key == address {
+				inValues = true
+				break
+			}
+		}
+		if inValues == false {
+			//Delete from leastconn values
+			delete(LeastConnValues, key)
+		}
+
+	}
+	for address, count := range LeastConnValues {
+		if min == -1 {
+			min = count
+			addressStore = address
+		} else {
+
+			if count <= min {
+				min = count
+				addressStore = address
+			}
+
+		}
+	}
+	var index int
+	for i, address := range addresses {
+		if address == addressStore {
+			index = i
+			break
+		}
+	}
+	LeastConnValues[addressStore]++
+	return index
 }
