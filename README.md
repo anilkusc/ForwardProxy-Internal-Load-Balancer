@@ -15,4 +15,4 @@ This is forward proxy with internal load balancer.It is working on Layer 7(for n
 - Source IP alghorithm will be implement
 - Https support
 - Tls Termination<br><br>
-:warning: ## Warning: It is not battle tested yet.Please test it thoroughly before using in production.
+## Warning: It is not battle tested yet.Please test it thoroughly before using in production.
