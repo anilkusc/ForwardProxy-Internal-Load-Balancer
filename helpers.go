@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/rand"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"time"
 )
@@ -325,4 +327,61 @@ func SourceIpHelper() int {
 
 	}
 	return 0
+}
+func ApiLogCollector(w *http.Response, r *http.Request, respBody string, reqBody string) {
+	var request Request
+	var response Response
+	request.HttpVersion = r.Proto
+	request.Path = r.URL.Path
+	request.Method = r.Method
+	request.Body = string(reqBody)
+	responseHeaderMap := make(map[string]string)
+	for name, values := range r.Header {
+		for _, value := range values {
+			responseHeaderMap[name] = value
+		}
+	}
+	request.Headers = responseHeaderMap
+	response.HttpVersion = w.Proto
+	response.Status = string(w.Status)
+	response.Body = respBody
+	requestHeaderMap := make(map[string]string)
+	for name, values := range w.Header {
+		for _, value := range values {
+			requestHeaderMap[name] = value
+		}
+	}
+	response.Headers = requestHeaderMap
+	log := &Log{
+		LogRequest:  request,
+		LogResponse: response,
+	}
+	logString, err := json.Marshal(log)
+	if err != nil {
+		fmt.Println(err)
+	}
+	if len(apiLogs) >= *logCacheCount {
+		for len(apiLogs) >= *logCacheCount {
+			apiLogs = RemoveIndex(apiLogs, 0)
+		}
+	}
+	apiLogs = append(apiLogs, string(logString))
+
+	f, _ := os.OpenFile("access.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f.WriteString(time.Now().UTC().String() + "\t" + string(logString) + "\n")
+	fi, err := os.Stat("access.log")
+	if err != nil {
+		fmt.Println(err)
+	}
+	f.Close()
+	size := fi.Size()
+	if size/(1024*1024) > *logSize {
+		err := os.Remove("access.log")
+
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+
 }
