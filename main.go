@@ -82,7 +82,12 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Hello World")
 }
 func api(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello World")
+	var connLogs string = `{ "Logs":[`
+	for _, apiLog := range apiLogs {
+		connLogs = connLogs + apiLog + ","
+	}
+	connLogs = connLogs + `]}`
+	fmt.Fprintf(w, connLogs)
 }
 
 func main() {

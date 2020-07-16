@@ -377,10 +377,8 @@ func ApiLogCollector(w *http.Response, r *http.Request, respBody string, reqBody
 	size := fi.Size()
 	if size/(1024*1024) > *logSize {
 		err := os.Remove("access.log")
-
 		if err != nil {
 			fmt.Println(err)
-			return
 		}
 	}
 

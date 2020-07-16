@@ -8,7 +8,6 @@ type Request struct {
 	Headers     map[string]string `json:"Headers"`
 }
 
-/////////////////////////////////////
 type Response struct {
 	HttpVersion string            `json:"Version"`
 	Status      string            `json:"Status"`
