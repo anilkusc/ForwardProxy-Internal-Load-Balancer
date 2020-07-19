@@ -32,6 +32,7 @@ class Home extends React.Component {
               host={data.Request.Host}
               version ={data.Request.Version}
               method ={data.Request.Method}
+              date ={data.Request.Date}
               /> )
               
               } 

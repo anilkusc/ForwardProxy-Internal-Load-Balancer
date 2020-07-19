@@ -41,6 +41,9 @@ class RequestCard extends React.Component {
         <Typography className={classes.pos} color="textSecondary">
         {this.props.version} - {this.props.method}
         </Typography>
+        <Typography variant="body2" component="p">
+          {this.props.date}
+        </Typography>
       </CardContent>
       <CardActions>
         <Button size="small">Body</Button><Button size="small">Headers</Button>

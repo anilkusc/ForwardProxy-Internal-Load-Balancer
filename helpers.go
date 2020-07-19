@@ -335,6 +335,7 @@ func ApiLogCollector(w *http.Response, r *http.Request, respBody string, reqBody
 	request.Host = r.Host + r.URL.Path
 	request.Method = r.Method
 	request.Body = string(reqBody)
+	request.Date = time.Now()
 	responseHeaderMap := make(map[string]string)
 	for name, values := range r.Header {
 		for _, value := range values {
