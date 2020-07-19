@@ -2,7 +2,7 @@ package main
 
 type Request struct {
 	HttpVersion string            `json:"Version"`
-	Path        string            `json:"Path"`
+	Host        string            `json:"Host"`
 	Method      string            `json:"Method"`
 	Body        string            `json:"Body"`
 	Headers     map[string]string `json:"Headers"`
