@@ -36,7 +36,7 @@ func proxy(w http.ResponseWriter, req *http.Request) {
 		tr, ip := ClientCreator()
 		client := &http.Client{Transport: tr}
 		var reqBody string
-		req, err := http.NewRequest(req.Method, "http://"+req.Host, nil)
+		req, err := http.NewRequest(req.Method, "http://"+req.Host+req.URL.Path, nil)
 		if err != nil {
 			fmt.Println("This ip address is now in blacklist:", ip)
 			AddBlacklist(ip, "http://"+req.Host)
@@ -83,10 +83,21 @@ func wsEndpoint(w http.ResponseWriter, r *http.Request) {
 }
 func api(w http.ResponseWriter, r *http.Request) {
 	var connLogs string = `{ "Logs":[`
-	for _, apiLog := range apiLogs {
-		connLogs = connLogs + apiLog + ","
+	for i, apiLog := range apiLogs {
+		if i == len(apiLogs)-1 {
+			connLogs = connLogs + apiLog
+		} else {
+			connLogs = connLogs + apiLog + ","
+		}
+
 	}
 	connLogs = connLogs + `]}`
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	w.Header().Set("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT")
+	w.Header().Set("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization")
+
 	fmt.Fprintf(w, connLogs)
 }
 
@@ -97,10 +108,11 @@ func main() {
 		go Healthcheck_Address()
 	}
 	r := mux.NewRouter()
-	r.HandleFunc("/", proxy)
 	r.HandleFunc("/ws", wsEndpoint)
 	r.HandleFunc("/api", api)
-
+	//If none of the above matches use as default below
+	r.PathPrefix("/").HandlerFunc(proxy)
 	fmt.Println("Serving on port :", *port)
+
 	http.ListenAndServe(":"+*port, r)
 }

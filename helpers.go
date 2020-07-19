@@ -332,7 +332,7 @@ func ApiLogCollector(w *http.Response, r *http.Request, respBody string, reqBody
 	var request Request
 	var response Response
 	request.HttpVersion = r.Proto
-	request.Path = r.URL.Path
+	request.Host = r.Host + r.URL.Path
 	request.Method = r.Method
 	request.Body = string(reqBody)
 	responseHeaderMap := make(map[string]string)
